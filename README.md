@@ -72,7 +72,11 @@ python 0路由\scripts\bootstrap.py check
 
 ![PaperForge 工作流](figs/workflow.png)
 
-检索侧可组合 OpenAlex、Crossref、PubMed/PMC、Europe PMC、arXiv、bioRxiv/medRxiv，以及可选的 Semantic Scholar；获取侧优先走 Unpaywall/OpenAlex OA、CORE、DOAJ、OpenAIRE、出版社页面或 ScienceDirect/Elsevier API、机构 WebVPN/EZproxy 和用户授权的浏览器会话。`0路由` 负责环境检查、计划、队列和输出契约，`1学术查询` 负责检索与规范化，`2工程化下载` 负责授权下载、补充材料、重试和来源记录，最终生成 PDF、CSV/XLSX/Markdown、JSONL 日志、失败报告和 DOI 索引。
+- 检索侧可组合 OpenAlex、Crossref、PubMed/PMC、Europe PMC、arXiv、bioRxiv/medRxiv，以及可选的 Semantic Scholar；
+- 获取侧优先走 Unpaywall/OpenAlex OA、CORE、DOAJ、OpenAIRE、出版社页面或 ScienceDirect/Elsevier API、机构 WebVPN/EZproxy 和用户授权的浏览器会话。
+- `0路由` 负责环境检查、计划、队列和输出契约
+- `1学术查询` 负责检索与规范化
+- `2工程化下载` 负责授权下载、补充材料、重试和来源记录，最终生成 PDF、CSV/XLSX/Markdown、JSONL 日志、失败报告和 DOI 索引
 
 ## 合规与隐私
 
