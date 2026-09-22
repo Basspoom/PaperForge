@@ -1,6 +1,5 @@
 <p align="center"><img src="figs/title.png" alt="PaperForge"></p>
-<h1 align="center">PaperForge</h1>
-<p align="center"><strong>Find it. Fetch it. Organize it.</strong></p>
+<h1 align="center">PaperForge: Find it. Fetch it. Organize it.</h1>
 
 PaperForge 是一个面向 Codex、Claude Code、OpenCode、DSH 等 coding agent 的文献获取技能：把自然语言检索需求、DOI 清单或 BibTeX/RIS/EndNote 引文，变成可追踪的 PDF、元信息表和失败报告。
 
@@ -45,7 +44,7 @@ python 0路由\scripts\bootstrap.py check
 ## 使用示例
 
 ```text
-找 2020 年以来关于钙钛矿稳定性的 20 篇高被引论文，先给候选列表，不要下载。
+找 2020 年以来关于丝氨酸水解酶改造或设计的 20 篇高被引论文，先给候选列表，不要下载。
 ```
 
 ```text
@@ -79,6 +78,3 @@ python 0路由\scripts\bootstrap.py check
 
 PaperForge 不授予任何内容访问权。使用者必须遵守所在司法辖区、机构订阅许可、出版社条款和版权法规。默认配置优先使用开放获取、出版社 API 和用户有权访问的机构通道。
 
-## 来源与许可证
-
-PaperForge 的原创路由与部署代码使用 Apache-2.0。部分检索和下载能力基于本地化的上游项目，归属和改动记录见 [`NOTICE`](NOTICE) 与 [`PROVENANCE.json`](PROVENANCE.json)。
