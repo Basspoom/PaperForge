@@ -1,4 +1,4 @@
-<p align="center"><img src="assets/paperforge-logo.png" width="112" alt="PaperForge logo"></p>
+<p align="center"><img src="figs/title.png" alt="PaperForge"></p>
 <h1 align="center">PaperForge</h1>
 <p align="center"><strong>Find it. Fetch it. Organize it.</strong></p>
 
@@ -6,7 +6,7 @@ PaperForge is an agent-native literature workflow for Codex, Claude Code, OpenCo
 
 ## What it does
 
-![PaperForge capabilities](assets/diagrams/paperforge-capabilities.png)
+![PaperForge capabilities](figs/capabilities.png)
 
 PaperForge connects discovery, citation verification, deduplication, authorized acquisition, supplementary-material handling, provenance, and structured delivery in one auditable workflow.
 
@@ -57,7 +57,7 @@ Download the papers in references.bib, preferring open access and institutional 
 
 ## Directory structure
 
-![PaperForge directory structure](assets/diagrams/paperforge-structure.png)
+![PaperForge directory structure](figs/structure.png)
 
 | Directory | Purpose |
 |---|---|
@@ -69,7 +69,7 @@ Download the papers in references.bib, preferring open access and institutional 
 
 ## PaperForge workflow
 
-![PaperForge workflow](assets/diagrams/paperforge-workflow.png)
+![PaperForge workflow](figs/workflow.png)
 
 Discovery can combine OpenAlex, Crossref, PubMed/PMC, Europe PMC, arXiv, bioRxiv/medRxiv, and optional Semantic Scholar. Acquisition prioritizes Unpaywall/OpenAlex OA, CORE, DOAJ, OpenAIRE, publisher pages or ScienceDirect/Elsevier APIs, institutional WebVPN/EZproxy, and user-authorized browser sessions. `0路由` handles checks, plans, queues, and output contracts; `1学术查询` handles search and normalization; `2工程化下载` handles authorized downloads, supplements, retries, and provenance.
 
