@@ -1,0 +1,50 @@
+PaperForge — 文献搜索与获取智能体
+Copyright 2026 PaperForge contributors
+
+This product includes software developed at third parties, localized (vendored)
+into this repository. The original copyright notices and license texts are
+preserved in the directories listed below.
+
+===============================================================================
+1. nature-skills — skills/nature-academic-search
+===============================================================================
+   Upstream : https://github.com/Yuan1z0825/nature-skills
+   Path     : skills/nature-academic-search
+   License  : Apache License 2.0
+   Localized: 1学术查询/
+   License text kept at: 1学术查询/LICENSE
+   Pinned commit: see PROVENANCE.json
+
+   Modifications: the subtree was copied verbatim (no source edits). Added a
+   copy of the upstream Apache-2.0 LICENSE and a LOCALIZATION.md describing the
+   vendoring. No upstream file content was changed.
+
+===============================================================================
+2. scansci-pdf
+===============================================================================
+   Upstream : https://github.com/Rimagination/scansci-pdf
+   License  : Apache License 2.0
+   Localized: 2工程化下载/vendor/scansci-pdf/
+   License text kept at: 2工程化下载/vendor/scansci-pdf/LICENSE
+   Pinned commit: see PROVENANCE.json
+
+   Modifications: the repository was copied verbatim (no source edits), minus
+   build artifacts (*.pyd, *.so) and __pycache__.
+
+   NOTE ON THE PROPRIETARY LAYER: upstream distributes a compiled Cython
+   extension under src/scansci_pdf/_core/. Its Cython sources (*.pyx) are
+   proprietary and are NOT part of the upstream repository, and are therefore
+   NOT included here. A GitHub checkout — and this vendored copy — runs the
+   pure-Python fallback implementation, which upstream documents as
+   functionally equivalent but slightly slower. Users who want the compiled
+   core can install from PyPI instead; see 2工程化下载/LOCALIZATION.md.
+
+===============================================================================
+3. Transitive references (not bundled)
+===============================================================================
+   The vendored materials above reference, but do not bundle, third-party
+   services and projects (Crossref, PubMed, arXiv, OpenAlex, Unpaywall,
+   Semantic Scholar, Elsevier APIs, FlareSolverr, cloakbrowser, patchright,
+   Tor, and others). Their own terms and licenses apply to their
+   use. Nothing in this repository grants rights to content obtained through
+   them.

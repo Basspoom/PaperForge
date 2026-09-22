@@ -1,0 +1,21 @@
+{
+  "localized_at_utc": null,
+  "sources": [
+    {
+      "repo": "https://github.com/Yuan1z0825/nature-skills",
+      "requested_ref": "main",
+      "pinned_commit": "9cecfef6ac683fa59d7d15d2e22f98fa71dacaf5",
+      "commit_date": "2026-09-19T02:39:36Z",
+      "localized_to": "1学术查询",
+      "license": "Apache-2.0"
+    },
+    {
+      "repo": "https://github.com/Rimagination/scansci-pdf",
+      "requested_ref": "HEAD",
+      "pinned_commit": "9029cec266e4b821f31cf9ea81ef680a60b729d4",
+      "commit_date": "2026-09-20T10:50:28Z",
+      "localized_to": "2工程化下载/vendor/scansci-pdf",
+      "license": "Apache-2.0"
+    }
+  ]
+}

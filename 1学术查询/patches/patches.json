@@ -1,0 +1,16 @@
+{
+  "comment": "本 skill 对本地化 nature-academic-search 副本的必要补丁。副本本身保持与上游逐字一致，改动只在这里显式声明。",
+  "upstream": "Yuan1z0825/nature-skills @ 9cecfef6ac683fa59d7d15d2e22f98fa71dacaf5 (skills/nature-academic-search)",
+  "patches": [
+    {
+      "id": "0001-arxiv-future-annotations",
+      "file": "mcp-server/sources/arxiv.py",
+      "title": "给 arxiv.py 补上 from __future__ import annotations",
+      "why": "该文件用 `import defusedxml.ElementTree as ET`，却在类型标注里写 `ET.Element`（`_parse_entry(self, entry: ET.Element)` 等）。没有 `from __future__ import annotations` 时这些标注在**定义期**就被求值，而 defusedxml 并不导出 `Element`，于是整个模块 import 失败：\n\n    AttributeError: module 'defusedxml.ElementTree' has no attribute 'Element'\n\n后果是 academic-search MCP 服务器**根本起不来**，16 个工具全部不可用——也就是这个 skill 的核心能力全废。\n\n同一个包里的 pubmed.py 有这一行，所以只有 arxiv.py 中招；tests/test_sources.py 用的是标准库 ElementTree，因此测试也照不出来。\n\n加 `from __future__ import annotations` 让标注变成惰性字符串，是一行修复且不改任何行为。",
+      "upstream": "Yuan1z0825/nature-skills @ 9cecfef6 (skills/nature-academic-search/mcp-server/sources/arxiv.py)",
+      "report_upstream": true,
+      "find": "\"\"\"arXiv data source via REST API (Atom XML feed).\"\"\"\n\nimport re",
+      "replace": "\"\"\"arXiv data source via REST API (Atom XML feed).\"\"\"\n\nfrom __future__ import annotations\n\nimport re"
+    }
+  ]
+}

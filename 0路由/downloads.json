@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "_说明": [
+    "V2 下载层策略：先直连（spider 路线），失败再走工程化引擎。",
+    "改这个文件就能调层级顺序、并发与延迟，不用改代码。"
+  ],
+
+  "fulltext": {
+    "order": ["engineering"],
+    "scihub": {
+      "enabled": false,
+      "mirrors": [
+        "https://sci-hub.box",
+        "https://sci-hub.su",
+        "https://sci-hub.ru",
+        "https://sci-hub.red"
+      ],
+      "max_page_tries": 10,
+      "pdf_retry": 2,
+      "delay_min": 0.6,
+      "delay_max": 2.0,
+      "gap_between_papers": 1.0,
+      "timeout": 30,
+      "scihub_first": false,
+      "_mirrors_note": "实测：sci-hub.se 已失效（TLS EOF）、.st/.vg/.ee/.bz/.mksa.top 等旧域名多已失效或 DNS 不解析，不要放进列表。"
+    }
+  },
+
+  "supplement": {
+    "order": ["engineering"],
+    "_说明": "补充材料走授权的工程化引擎；实验性直连默认关闭。",
+    "engineering_args": ["--si"]
+  },
+
+  "engineering": {
+    "python": "",
+    "_python_note": "留空则自动探测：优先本仓库 workspace/.venv，其次系统 python，最后用 PYTHONPATH 指向已安装 scansci_pdf 的 site-packages。",
+    "extra_pythonpath": "",
+    "batch_args": [],
+    "timeout_per_paper": 600,
+    "batch_timeout": 7200
+  },
+
+  "gates": {
+    "confirm_before_batch": true,
+    "_说明": "门①：检索出候选列表后必须用户确认才批量下载；输入里已明确给定清单时视为已确认。"
+  }
+}

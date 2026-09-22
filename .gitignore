@@ -1,0 +1,46 @@
+# 运行产物：绝不入库
+workspace/
+
+# 由 bootstrap.py 按当前安装路径生成的 MCP 配置（含绝对路径，不该入库）
+.mcp.json
+
+# 沙箱/受限环境里子进程留下的临时目录（可能带 ACL，删不掉也不该入库）
+.tmp/
+.pylib/
+.test/
+.pip-cache/
+.uv-cache/
+.uv-python/
+.browsers/
+
+# 本地部署状态与密钥：绝不入库
+*.local.json
+*.local.yaml
+.env
+credentials*.json
+elsevier*.json
+cookies*.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+
+# 上游构建产物
+*.pyd
+*.so
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Download and benchmark outputs
+*.pdf
+tests/*.csv
+tests/*results*
+tests/*deploy*

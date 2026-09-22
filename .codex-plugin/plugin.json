@@ -1,0 +1,22 @@
+{
+  "name": "paperforge",
+  "version": "2.0.0",
+  "description": "Agent-native literature discovery, metadata verification, and authorized PDF acquisition.",
+  "author": { "name": "PaperForge contributors" },
+  "license": "Apache-2.0",
+  "keywords": ["academic search", "literature", "PDF", "DOI", "Codex", "agent skill"],
+  "interface": {
+    "displayName": "PaperForge",
+    "shortDescription": "Find it. Fetch it. Organize it.",
+    "longDescription": "Search academic literature, verify citations, download authorized full text, and produce DOI-named PDFs with metadata and failure reports.",
+    "developerName": "PaperForge",
+    "category": "Science",
+    "capabilities": ["Interactive", "Read", "Write"],
+    "defaultPrompt": [
+      "检查 PaperForge 环境，不要修改配置",
+      "先检索论文候选列表，等我确认后再下载",
+      "把 DOI 清单下载成 PDF 并生成 metadata.csv"
+    ],
+    "brandColor": "#0F766E"
+  }
+}

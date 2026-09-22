@@ -1,0 +1,60 @@
+{
+  "comment": "本 skill 对本地化上游副本的必要补丁。vendor/ 保持与上游逐字一致，改动只在这里显式声明，便于审计与重新同步上游。每条补丁用「字面替换」而不是行号 diff，因此上游行号漂移不会导致错打；上下文不匹配时脚本会报 conflict 而不是硬打。",
+  "upstream": "Rimagination/scansci-pdf @ 9029cec266e4b821f31cf9ea81ef680a60b729d4 (v1.17.0)",
+  "patches": [
+    {
+      "id": "0001-fix-browser-backend-cache-unbound",
+      "file": "src/scansci_pdf/browser_engine.py",
+      "title": "修复 _check_browser_backend 的 UnboundLocalError",
+      "why": "该函数给模块级变量 _HAS_BROWSER_BACKEND 赋值却没有 global 声明，使它在函数内成为局部变量；于是条件里的读取必然抛 UnboundLocalError。任何调用 browser_engine.is_available() 的路径都会崩，包括 `scansci-pdf browser-status`、`browser-doctor`，以及依赖浏览器后端的机构登录与反爬通道。",
+      "report_upstream": true,
+      "find": "def _check_browser_backend(config: dict[str, Any] | None = None) -> bool:\n    \"\"\"Check whether the resolved backend is importable (cached per backend).\"\"\"\n    from .browser_backend import (",
+      "replace": "def _check_browser_backend(config: dict[str, Any] | None = None) -> bool:\n    \"\"\"Check whether the resolved backend is importable (cached per backend).\"\"\"\n    global _HAS_BROWSER_BACKEND\n    from .browser_backend import ("
+    },
+    {
+      "id": "0002-browser-login-forward-config-interactive",
+      "file": "src/scansci_pdf/browser_login.py",
+      "title": "交互式登录路径把 config 传给 launch()",
+      "why": "open_login_browser() 调用 launch() 时没有传 config，于是 browser_backend._patchright_browser_kwargs(None) 永远返回 {\"channel\": \"chrome\"}：配置里的 browser_executable / browser_backend 被整体忽略，机器上只有 Edge（或只有非默认路径的 Chromium）时登录必然失败，除非额外下载内置 chromium。WebVPN / CARSI / EZProxy 全部走这条路径。",
+      "report_upstream": true,
+      "find": "        browser = launch(headless=False, humanize=True,\n                         args=[\"--disable-features=CrossOriginOpenerPolicy\"])",
+      "replace": "        browser = launch(headless=False, humanize=True, config=config,\n                         args=[\"--disable-features=CrossOriginOpenerPolicy\"])"
+    },
+    {
+      "id": "0003-browser-login-forward-config-persistent",
+      "file": "src/scansci_pdf/browser_login.py",
+      "title": "常驻浏览器 _start() 把 config 传给 launch()",
+      "why": "与 0002 同一根因：PersistentBrowser._start() 拿到 config 却只用于 _restore_state，没有传给 launch()，因此常驻会话同样忽略 browser_executable 配置。",
+      "report_upstream": true,
+      "find": "        self._browser = launch(\n            headless=False, humanize=True,\n            args=[\"--disable-features=CrossOriginOpenerPolicy\"],\n        )\n        self._context = self._browser.new_context()",
+      "replace": "        self._browser = launch(\n            headless=False, humanize=True, config=config,\n            args=[\"--disable-features=CrossOriginOpenerPolicy\"],\n        )\n        self._context = self._browser.new_context()"
+    },
+    {
+      "id": "0004-webvpn-login-add-verified-detect",
+      "file": "src/scansci_pdf/browser_login.py",
+      "title": "给 webvpn_login 补上「经过验证」的登录判定",
+      "why": "webvpn_login() 调 open_login_browser() 时没有传 detect_login，而内部是 `if detect_login and detect_login(...)`——判定恒为假，用户即使登录成功也会一直等到 max_wait=600 秒超时，且**一个 cookie 都不保存**，WebVPN 通道永远不可用。（CARSI 与 EZProxy 都传了 detect_login，只有 WebVPN 漏了。）\n\n判定为什么必须「验证」而不是「看 cookie」：实测发现网关在**登录之前**就会下发 wengine_vpn_ticket cookie（同样 16 字符），所以「出现票据即成功」是假阳性——会在未登录状态下保存一堆无效 cookie。因此这里用网关真实探测：拿浏览器当前的 cookie 去请求一个经 WebVPN 转换过的 URL，只有不再被踢回 CAS/登录页才算成功。同一条已验证的探测逻辑也是 instsci.session_status() 判定 valid 的依据。",
+      "report_upstream": true,
+      "find": "    # Canonical name matches the loader in instsci.instsci_cookie_path; the\n    # loader also accepts the legacy underscore variant for migration.\n    cookie_file = cache_dir / \"instsci-cookies.json\"\n\n    return open_login_browser(base, config, cookie_file=cookie_file, max_wait=600)",
+      "replace": "    # Canonical name matches the loader in instsci.instsci_cookie_path; the\n    # loader also accepts the legacy underscore variant for migration.\n    cookie_file = cache_dir / \"instsci-cookies.json\"\n\n    _probe_state = {\"last\": 0.0}\n\n    def _detect(context: Any, page: Any) -> bool:\n        \"\"\"WebVPN 登录判定：必须由网关实测通过，不能只看 cookie 是否存在。\n\n        为什么不能用「有没有 wengine_vpn_ticket」当判据：该 cookie 在登录之前\n        网关就会下发，名字与形态和正式会话票据无法区分，据此返回成功会保存\n        一批无效 cookie，让后续所有机构请求都以为「会话有效」。\n        这里改为：用浏览器当前的 cookie 真去请求一个经 WebVPN 转换过的 URL，\n        只有不再被踢回 CAS/登录页才算真正登录完成。\n        \"\"\"\n        import time as _time\n\n        now = _time.time()\n        if now - _probe_state[\"last\"] < 12:\n            return False\n        _probe_state[\"last\"] = now\n\n        try:\n            from .sources.instsci import convert_url\n        except Exception:\n            return False\n\n        try:\n            jar = {}\n            for c in context.cookies():\n                if \"wengine_vpn_ticket\" in str(c.get(\"name\", \"\")).lower():\n                    jar[c[\"name\"]] = c[\"value\"]\n            if not jar:\n                return False\n        except Exception:\n            return False\n\n        try:\n            import requests as _requests\n            probe = convert_url(\"https://www.nature.com\", base, config)\n            sess = _requests.Session()\n            sess.trust_env = False\n            for c in context.cookies():\n                sess.cookies.set(c[\"name\"], c[\"value\"],\n                                 domain=c.get(\"domain\") or None,\n                                 path=c.get(\"path\") or \"/\")\n            resp = sess.get(probe, timeout=20, allow_redirects=True)\n            landed = resp.url.lower()\n        except Exception:\n            return False\n\n        if \"cas/login\" in landed or \"/login\" in landed or \"passport.ustc\" in landed:\n            return False\n        return resp.status_code == 200\n\n    return open_login_browser(\n        base, config, cookie_file=cookie_file, detect_login=_detect, max_wait=600\n    )"
+    },
+    {
+      "id": "0005-login-loop-report-progress",
+      "file": "src/scansci_pdf/browser_login.py",
+      "title": "交互式登录等待期间打印进度，避免「卡住没反应」的错觉",
+      "why": "等待循环原来只在成功或超时才输出，用户在整个 10 分钟里看到的是一个转圈的页面加一个沉默的终端，无法判断程序是否还活着、当前停在哪一步。这里每 15 秒回报一次当前 URL 与已等待时长。",
+      "report_upstream": false,
+      "find": "        elapsed = 0\n        while elapsed < max_wait:\n            time.sleep(3)\n            elapsed += 3\n\n            try:\n                current_url = page.url\n                if remote:\n                    remote.update_url(current_url)\n            except Exception:",
+      "replace": "        elapsed = 0\n        _last_report = 0\n        while elapsed < max_wait:\n            time.sleep(3)\n            elapsed += 3\n\n            try:\n                current_url = page.url\n                if remote:\n                    remote.update_url(current_url)\n                if elapsed - _last_report >= 15:\n                    _last_report = elapsed\n                    print(f\"  [{elapsed:>4}s] 当前页面: {current_url[:110]}\", flush=True)\n            except Exception:"
+    },
+    {
+      "id": "0006-elsevier-key-profile-not-entitled-vs-invalid",
+      "file": "src/scansci_pdf/elsevier_check.py",
+      "title": "区分「key 有效但无全文权益」与「无效 key」",
+      "why": "画像判定只给了两条出路：带 key 拿到 ENTITLED → 「广覆盖机构 key」；否则先看 OA 对照，OA 对照不通过就一律落到「无效 key」。\n\n但实测发现：不带 key 请求全文端点会得到 406 INVALID_INPUT（Accept: application/pdf is restricted），而带一个**有效但无该资源权益**的 key 会得到 403 AUTHENTICATION_ERROR（Requestor configuration settings insufficient）。两者响应完全不同，说明 key 被 Elsevier 正常识别了——只是当前网络/账号没有 ScienceDirect 全文权益（典型原因：不在机构 IP 段，或机构未订阅）。\n\n原逻辑会把这种情况误报成「无效 key」，建议用户「重新申请 key」——用户照做也解决不了问题，因为 key 本身没错。这里补一个分支，用带 key 的响应码（401/403）作为「key 被识别」的证据，并把原因与出路写清楚。\n\n证据（实测同机同 key）：\n  摘要端点 无 key → 200 但字段精简；有 key → 200 且字段明显更全（含 affiliation）\n  全文端点 无 key → 406 INVALID_INPUT；有 key → 403 AUTHENTICATION_ERROR\n  伪造 key        → 503 Service Unavailable\n",
+      "report_upstream": true,
+      "find": "    elif oa_ok:\n        profile = \"key 有效但无该刊订阅\"\n        advice = \"该 key 未绑定机构权益或机构未订阅——用机构身份重新注册 key，或依赖 OA/灰色通道\"\n    else:\n        profile = \"无效 key\"\n        advice = \"重新运行 elsevier-setup --api-key 配置有效 key\"",
+      "replace": "    elif key_rows and all(v in (NOT_ENTITLED, NOT_FOUND) for _, _, v in key_rows):\n        # 带 key 返回 401/403 = key 已被 Elsevier 识别，只是没有该资源的权益。\n        # 这与「无效 key」是两回事：让用户去重新申请 key 解决不了任何问题。\n        profile = \"key 有效但无全文权益\"\n        advice = (\n            \"key 已被 Elsevier 正常识别，但当前网络/账号没有 ScienceDirect 全文权益。\"\n            \"常见原因：不在机构 IP 段（需校园网出口），或机构未订阅该刊。\"\n            \"处理：在机构网络内重试；或改用 OA / 机构通道（WebVPN）取全文。\"\n            \"注意：重新申请 key 不会改变这个结果。\"\n        )\n    elif oa_ok:\n        profile = \"key 有效但无该刊订阅\"\n        advice = \"该 key 未绑定机构权益或机构未订阅——用机构身份重新注册 key，或依赖 OA/灰色通道\"\n    else:\n        profile = \"无效 key\"\n        advice = \"重新运行 elsevier-setup --api-key 配置有效 key\""
+    }
+  ]
+}
